@@ -1,0 +1,49 @@
+apiVersion: nais.io/v1alpha1
+kind: Application
+metadata:
+  name: tsm-behandlingsdager
+  namespace: tsm
+  labels:
+    team: tsm
+
+spec:
+  kafka:
+    pool: nav-dev
+
+  port: 8080
+  replicas:
+    min: 1
+    max: 2
+    cpuThresholdPercentage: 90
+  resources:
+    limits:
+      memory: 1Gi
+    requests:
+      cpu: 30m
+      memory: 512Mi
+
+  liveness:
+    path: /internal/health/alive
+  readiness:
+    path: /internal/health/ready
+  preStopHook:
+    http:
+      path: /internal/shutdown
+  prometheus:
+    enabled: true
+    path: /internal/metrics
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+
+  azure:
+    application:
+      enabled: true
+
+  accessPolicy:
+    outbound:
+      rules:
+        - application: logging
+          namespace: nais-system
+        - application: tsm-pdl-cache

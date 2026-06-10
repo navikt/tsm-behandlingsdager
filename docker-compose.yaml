@@ -1,0 +1,7 @@
+services:
+  kafka:
+    image: apache/kafka:3.9.1
+    container_name: tsm-behandlingsdager-kafka
+
+    ports:
+      - "9092:9092"
