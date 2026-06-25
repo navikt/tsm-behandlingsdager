@@ -36,6 +36,7 @@ abstract class WithKafka {
                         texasConfig = TexasConfig(tokenEndpoint = "https://test.token/token"),
                         tsmPdlCache = TsmPdlConfig(url = "https://test.pdl"),
                     ),
+                behandlingsdagerIds = listOf("1", "2")
             )
         }
     }

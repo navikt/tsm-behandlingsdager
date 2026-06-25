@@ -10,8 +10,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.LoggerFactory
-import java.util.Properties
-import kotlin.collections.set
+import java.util.*
 
 class OppgaveProducer(env: Environment) {
     private val log = LoggerFactory.getLogger(OppgaveProducer::class.java)
