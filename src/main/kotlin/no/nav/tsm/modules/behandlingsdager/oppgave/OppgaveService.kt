@@ -7,13 +7,15 @@ import no.nav.tsm.modules.behandlingsdager.pdl.PdlClient
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlIdentgruppe
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlPerson
 import no.nav.tsm.sykmelding.input.core.model.SykmeldingRecord
+import no.nav.tsm.sykmelding.input.core.model.metadata.MessageMetadata
+import no.nav.tsm.sykmelding.input.core.model.metadata.OrgIdType
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 class OppgaveService(private val pdlClient: PdlClient, private val kafkaProducer: OppgaveProducer) {
-    suspend fun createOppgave(sykmeldingRecord: SykmeldingRecord.Digital) {
+    suspend fun createOppgave(sykmeldingRecord: SykmeldingRecord) {
         val person = pdlClient.getPerson(sykmeldingRecord.sykmelding.pasient.fnr).getOrElse { throw RuntimeException("Fant ikke person for sykmelding: ${sykmeldingRecord.sykmelding.id}") }
         val oppgave = toOppgaveKafkaMessage(person, sykmeldingRecord)
         kafkaProducer.send(oppgave)
@@ -22,7 +24,7 @@ class OppgaveService(private val pdlClient: PdlClient, private val kafkaProducer
 
 private fun toOppgaveKafkaMessage(
     person: PdlPerson,
-    sykmeldingRecord: SykmeldingRecord.Digital
+    sykmeldingRecord: SykmeldingRecord
 ): OpprettOppgaveKafkaMessage {
         return OpprettOppgaveKafkaMessage(
         messageId = sykmeldingRecord.sykmelding.id,
@@ -30,7 +32,14 @@ private fun toOppgaveKafkaMessage(
         tildeltEnhetsnr = "",
         opprettetAvEnhetsnr = "9999",
         behandlesAvApplikasjon = "FS22",
-        orgnr = sykmeldingRecord.metadata.orgnummer,
+        orgnr = when(val record = sykmeldingRecord) {
+            is SykmeldingRecord.Digital -> record.metadata.orgnummer
+            is SykmeldingRecord.Xml -> when (val meta = record.metadata) {
+                is MessageMetadata.Xml.Emottak.EDI -> meta.sender.underOrganisasjon?.ids?.firstOrNull { it.type == OrgIdType.ENH}?.id ?: meta.sender.ids.firstOrNull { it.type == OrgIdType.ENH }?.id ?: ""
+                else -> ""
+            }
+            else -> ""
+        },
         beskrivelse =
             "Manuell behandling av sykmelding grunnet følgende regler: Sykmelding inneholder behandlingsdager (felt 4.4).",
         temagruppe = "ANY",

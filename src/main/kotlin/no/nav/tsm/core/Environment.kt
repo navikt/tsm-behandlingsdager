@@ -18,6 +18,7 @@ class Environment(
     val runtime: Runtime,
     val kafka: KafkaConfig,
     val external: ExternalConfig,
+    val behandlingsdagerIds: List<String>,
 )
 
 data class ExternalConfig(
@@ -60,7 +61,11 @@ fun initializeEnvironment(config: ApplicationConfig): Environment {
                 url = config.property("external.tsmPdlCache.url").getString()
             )
 
-        )
+        ),
+        behandlingsdagerIds =
+            config.property("behandlingsdager.ids").getString().split(',').filter {
+                it.isNotEmpty()
+            },
     )
 }
 

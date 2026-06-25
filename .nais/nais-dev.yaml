@@ -36,7 +36,8 @@ spec:
     autoInstrumentation:
       enabled: true
       runtime: java
-
+  envFrom:
+    - configmap: regulus-behandlingsdager
   azure:
     application:
       enabled: true

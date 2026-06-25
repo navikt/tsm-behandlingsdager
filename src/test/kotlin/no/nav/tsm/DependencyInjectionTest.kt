@@ -57,5 +57,6 @@ class DependencyInjectionTest : WithKafka() {
             "NAIS_POD_NAME" to "tsm-behandlingsdager-test",
             "NAIS_CLUSTER_NAME" to cluster,
             "NAIS_TOKEN_ENDPOINT" to "http://localhost:7164/api/v1/token",
+            "BEHANDLINGSDAGER_IDS" to ""
         )
 }

@@ -2,6 +2,7 @@ package no.nav.tsm.modules.behandlingsdager.sykmelding
 
 import arrow.core.right
 import com.fasterxml.jackson.module.kotlin.readValue
+import io.kotest.matchers.equals.shouldEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.*
 import kotlinx.coroutines.*
@@ -46,7 +47,7 @@ class SykmeldingConsumerIT : WithKafka() {
             coEvery { it.getPerson(any()) } returns TestData.pdlPerson().right()
         }
 
-    val service = SykmeldingConsumerService(sykmeldingConsumer, OppgaveService(pdlClient, oppgaveProducer))
+    val service = SykmeldingConsumerService(sykmeldingConsumer, OppgaveService(pdlClient, oppgaveProducer), env)
     private val sykmeldingProducer = KafkaProducer(env.kafka.config, StringSerializer(), ByteArraySerializer())
 
     @AfterTest
@@ -141,6 +142,23 @@ class SykmeldingConsumerIT : WithKafka() {
             }
         }
     }
+
+    @Test
+    fun `produce an oppgave for an xml sykmelding with behandlingsdager`() {
+        runWithSykmeldingConsumer {
+            val record =
+                TestData.xmlSykmeldingRecord(sykmeldingId = "1",
+                    aktivitet = listOf(TestData.behandlingsdagerAktivitet()),
+                )
+
+            val recordMetadata = publishInput(record.sykmelding.id, record)
+            val id = oppgaveConsumUntil(record.sykmelding.id, 1000L)
+            id shouldEqual "1"
+            verify(exactly = 1, timeout = 10000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))}
+            verify(exactly = 1, timeout = 1000) { sykmeldingConsumer.commitSync(0, recordMetadata.offset() + 1) }
+        }
+    }
+
 
 
     @Test
