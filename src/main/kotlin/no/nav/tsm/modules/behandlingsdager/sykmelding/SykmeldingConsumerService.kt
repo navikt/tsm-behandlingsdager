@@ -19,6 +19,10 @@ class SykmeldingConsumerService(val sykmeldingConsumer: SykmeldingConsumer,
 
     private val log = logger()
     private val behandlingsdager = env.behandlingsdagerIds
+
+    init {
+        log.info("Behandlingsdager size is ${behandlingsdager.size}")
+    }
     suspend fun start() = withContext(Dispatchers.IO) {
         while(isActive) {
             sykmeldingConsumer.subscribe()
