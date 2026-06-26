@@ -50,21 +50,15 @@ class SykmeldingConsumerService(val sykmeldingConsumer: SykmeldingConsumer,
 
     private suspend fun processRecord(record: ConsumerRecord<String, ByteArray>) {
         val sykmeldingRecord = sykmeldingObjectMapper.readValue<SykmeldingRecord>(record.value())
-
-
-        if (sykmeldingRecord is SykmeldingRecord.Digital || (sykmeldingRecord is SykmeldingRecord.Xml && behandlingsdager.contains(sykmeldingRecord.sykmelding.id) )) {
-
-            val behandlingsdager = sykmeldingRecord.sykmelding.aktivitet.filterIsInstance<Aktivitet.Behandlingsdager>()
-            if(behandlingsdager.isEmpty()) {
-                log.info("${sykmeldingRecord.sykmelding.type} sykmelding is not behandlingsdager ${sykmeldingRecord.sykmelding.id}")
-                return
-            }
-
-            log.info("${sykmeldingRecord.sykmelding.type} wiht id: ${sykmeldingRecord.sykmelding.id} er enkeltstående behandlingsdager, oppretter oppgave")
-
-            oppgaveService.createOppgave(sykmeldingRecord)
+        val behandlingsdager = sykmeldingRecord.sykmelding.aktivitet.filterIsInstance<Aktivitet.Behandlingsdager>()
+        if(behandlingsdager.isEmpty()) {
+            log.info("${sykmeldingRecord.sykmelding.type} sykmelding is not behandlingsdager ${sykmeldingRecord.sykmelding.id}")
+            return
         }
 
+        log.info("${sykmeldingRecord.sykmelding.type} wiht id: ${sykmeldingRecord.sykmelding.id} er enkeltstående behandlingsdager, oppretter oppgave")
+
+        oppgaveService.createOppgave(sykmeldingRecord)
         sykmeldingConsumer.commitSync(record.partition(), record.offset() + 1)
     }
 }

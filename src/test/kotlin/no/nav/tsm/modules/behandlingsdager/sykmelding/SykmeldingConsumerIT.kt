@@ -124,7 +124,7 @@ class SykmeldingConsumerIT : WithKafka() {
     }
 
     @Test
-    fun `does not produce an oppgave for an xml sykmelding with behandlingsdager`() {
+    fun `does produce an oppgave for an xml sykmelding with behandlingsdager`() {
         runWithSykmeldingConsumer {
             val record =
                 TestData.xmlSykmeldingRecord(
@@ -133,9 +133,9 @@ class SykmeldingConsumerIT : WithKafka() {
 
             val recordMetadata = publishInput(record.sykmelding.id, record)
             verify(exactly = 1, timeout = 10000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata))) }
-            verify(exactly = 0) { sykmeldingConsumer.commitSync(0, recordMetadata.offset()) }
+            verify(exactly = 1) { sykmeldingConsumer.commitSync(0, recordMetadata.offset() + 1) }
 
-            verify(exactly = 0) {
+            verify(exactly = 1) {
                 oppgaveProducer.send(match {
                     it.messageId == record.sykmelding.id
                 })
