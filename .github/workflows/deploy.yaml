@@ -14,14 +14,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: navikt/tsm-workflows/actions/gradle/test@main
 
   build:
     runs-on: ubuntu-latest
     if: github.ref_name == 'main' || startsWith(github.ref_name, 'dev')
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: navikt/tsm-workflows/actions/gradle/build@main
         id: build
         with:
@@ -31,7 +31,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     outputs:
       image: ${{ steps.build.outputs.image }}
-      digest: ${{ steps.build.outputs.digest }}
 
   sbom:
     name: Upload SBOM for build
@@ -40,8 +39,7 @@ jobs:
     steps:
       - uses: navikt/tsm-workflows/actions/attest-sign@main
         with:
-          image: ${{ needs.build.outputs.image }}
-          digest: ${{ needs.build.outputs.digest }}
+          image_ref: ${{ needs.build.outputs.image }}
           team: tsm
 
   deploy-dev:
@@ -49,7 +47,7 @@ jobs:
     needs: [build, test]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: "dev-gcp"
@@ -61,7 +59,7 @@ jobs:
     needs: [build, test, deploy-dev]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: nais/deploy/actions/deploy@v2
         env:
           CLUSTER: "prod-gcp"
