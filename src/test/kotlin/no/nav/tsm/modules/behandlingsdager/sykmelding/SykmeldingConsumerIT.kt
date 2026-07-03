@@ -11,6 +11,7 @@ import no.nav.tsm.modules.behandlingsdager.oppgave.OppgaveProducer
 import no.nav.tsm.modules.behandlingsdager.oppgave.OppgaveService
 import no.nav.tsm.modules.behandlingsdager.oppgave.OpprettOppgaveKafkaMessage
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlClient
+import no.nav.tsm.sykmelding.input.core.model.RuleType
 import no.nav.tsm.sykmelding.input.core.model.sykmeldingObjectMapper
 import no.nav.tsm.utils.TestData
 import no.nav.tsm.utils.WithKafka
@@ -80,6 +81,24 @@ class SykmeldingConsumerIT : WithKafka() {
         runWithSykmeldingConsumer {
             val record = TestData.digitalSykmeldingRecord(aktivitet = listOf(TestData.gradertAktivitet()))
 
+            val recordMetadata = publishInput(record.sykmelding.id, record)
+            verify(exactly = 1, timeout = 1000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata))) }
+            verify(exactly = 0) { sykmeldingConsumer.commitSync(0, recordMetadata.offset()) }
+
+            verify (exactly = 0) {
+                oppgaveProducer.send(match {
+                    it.messageId == record.sykmelding.id
+                })
+            }
+        }
+    }
+
+
+    @Test
+    fun `does not produce an oppgave for a digital sykmelding behandlingsdager when status is not OK`() {
+        runWithSykmeldingConsumer {
+            val okRecord = TestData.digitalSykmeldingRecord(aktivitet = listOf(TestData.behandlingsdagerAktivitet()))
+            val record = okRecord.copy(validation = okRecord.validation.copy(status = RuleType.PENDING))
             val recordMetadata = publishInput(record.sykmelding.id, record)
             verify(exactly = 1, timeout = 1000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata))) }
             verify(exactly = 0) { sykmeldingConsumer.commitSync(0, recordMetadata.offset()) }

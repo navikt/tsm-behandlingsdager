@@ -6,7 +6,9 @@ import no.nav.tsm.core.Environment
 import no.nav.tsm.core.logger
 import no.nav.tsm.modules.behandlingsdager.oppgave.OppgaveService
 import no.nav.tsm.sykmelding.input.core.model.Aktivitet
+import no.nav.tsm.sykmelding.input.core.model.RuleType
 import no.nav.tsm.sykmelding.input.core.model.SykmeldingRecord
+import no.nav.tsm.sykmelding.input.core.model.ValidationResult
 import no.nav.tsm.sykmelding.input.core.model.sykmeldingObjectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import kotlin.coroutines.cancellation.CancellationException
@@ -50,9 +52,14 @@ class SykmeldingConsumerService(val sykmeldingConsumer: SykmeldingConsumer,
 
     private suspend fun processRecord(record: ConsumerRecord<String, ByteArray>) {
         val sykmeldingRecord = sykmeldingObjectMapper.readValue<SykmeldingRecord>(record.value())
+
         val behandlingsdager = sykmeldingRecord.sykmelding.aktivitet.filterIsInstance<Aktivitet.Behandlingsdager>()
         if(behandlingsdager.isEmpty()) {
-            log.info("${sykmeldingRecord.sykmelding.type} sykmelding is not behandlingsdager ${sykmeldingRecord.sykmelding.id}")
+            return
+        }
+
+        if(sykmeldingRecord.validation.status != RuleType.OK) {
+            log.info("Behandlingsdager validation is ${sykmeldingRecord.validation.status}, skipping for now")
             return
         }
 
