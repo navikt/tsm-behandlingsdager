@@ -1,5 +1,8 @@
 package no.nav.tsm.modules.behandlingsdager.sykmelding
 
+import java.time.Duration
+import java.util.*
+import kotlin.time.toJavaDuration
 import no.nav.tsm.core.Environment
 import no.nav.tsm.ktor.logger
 import org.apache.kafka.clients.consumer.ConsumerConfig
@@ -9,9 +12,6 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata
 import org.apache.kafka.common.TopicPartition
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.StringDeserializer
-import java.time.Duration
-import java.util.*
-import kotlin.time.toJavaDuration
 
 class SykmeldingConsumer(env: Environment) {
     private val kafkaConsumer: KafkaConsumer<String, ByteArray>
@@ -19,11 +19,13 @@ class SykmeldingConsumer(env: Environment) {
     private val pollInterval: Duration = env.kafka.pollInterval.toJavaDuration()
     private val topic = "tsm.sykmeldinger"
     private val logger = logger()
+
     init {
-        val kafkaProperties = Properties(env.kafka.config).apply {
-            this[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
-            this[ConsumerConfig.GROUP_ID_CONFIG] = groupId
-        }
+        val kafkaProperties =
+            Properties(env.kafka.config).apply {
+                this[ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG] = "false"
+                this[ConsumerConfig.GROUP_ID_CONFIG] = groupId
+            }
         kafkaConsumer = KafkaConsumer(kafkaProperties, StringDeserializer(), ByteArrayDeserializer())
     }
 
@@ -36,7 +38,6 @@ class SykmeldingConsumer(env: Environment) {
         logger.info("Unsubscribing $topic")
         kafkaConsumer.unsubscribe()
     }
-
 
     fun poll(): ConsumerRecords<String, ByteArray> {
         return kafkaConsumer.poll(pollInterval)

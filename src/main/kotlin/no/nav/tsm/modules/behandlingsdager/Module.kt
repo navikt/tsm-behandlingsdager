@@ -21,19 +21,13 @@ fun Application.configureBehandlingsdager() {
 private fun Application.configureConsumer() {
     val sykmeldingConsumerService: SykmeldingConsumerService by dependencies
 
-    monitor.subscribe(ApplicationStarted) {
-        launch { sykmeldingConsumerService.start() }
-    }
+    monitor.subscribe(ApplicationStarted) { launch { sykmeldingConsumerService.start() } }
 }
 
 private fun Application.configureDependencies() {
     dynamicDependencies {
-        cloud {
-            provide<PdlClient>(PdlCloudClient::class)
-        }
-        local {
-            provide<PdlClient>(PdlLocalClient::class)
-        }
+        cloud { provide<PdlClient>(PdlCloudClient::class) }
+        local { provide<PdlClient>(PdlLocalClient::class) }
     }
 
     dependencies {

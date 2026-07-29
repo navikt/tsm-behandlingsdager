@@ -25,7 +25,7 @@ class EnvironmentTest {
             "KAFKA_TRUSTSTORE_PATH" to "/secrets/truststore.jks",
             "KAFKA_CREDSTORE_PASSWORD" to "credstore-pwd",
             "KAFKA_KEYSTORE_PATH" to "/secrets/keystore.p12",
-            "BEHANDLINGSDAGER_IDS" to ","
+            "BEHANDLINGSDAGER_IDS" to ",",
         )
 
     @Test

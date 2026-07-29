@@ -3,6 +3,17 @@ rootProject.name = "behandlingsdager"
 val ktorVersion = "3.5.1"
 val tsmKtorVersion = "1.0.0"
 
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id("io.github.ben-manes.versions.settings") version "0.56.0"
+}
+
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
@@ -12,12 +23,5 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("ktorLibs").from("io.ktor:ktor-version-catalog:${ktorVersion}")
         create("tsmKtorLibs").from("no.nav.tsm:ktor-version-catalog:${tsmKtorVersion}")
-    }
-}
-
-pluginManagement {
-    repositories {
-        mavenCentral()
-        gradlePluginPortal()
     }
 }

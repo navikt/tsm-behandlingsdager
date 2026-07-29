@@ -5,6 +5,12 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.equals.shouldEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.*
+import java.util.*
+import kotlin.test.AfterTest
+import kotlin.test.Test
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import no.nav.tsm.modules.behandlingsdager.oppgave.OppgaveProducer
@@ -27,12 +33,6 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
-import java.util.*
-import kotlin.test.AfterTest
-import kotlin.test.Test
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
 
 class SykmeldingConsumerIT : WithKafka() {
 
@@ -48,7 +48,12 @@ class SykmeldingConsumerIT : WithKafka() {
             coEvery { it.getPerson(any()) } returns TestData.pdlPerson().right()
         }
 
-    val service = SykmeldingConsumerService(sykmeldingConsumer, OppgaveService(pdlClient, oppgaveProducer), env)
+    val service =
+        SykmeldingConsumerService(
+            sykmeldingConsumer,
+            OppgaveService(pdlClient, oppgaveProducer),
+            env,
+        )
     private val sykmeldingProducer = KafkaProducer(env.kafka.config, StringSerializer(), ByteArraySerializer())
 
     @AfterTest
@@ -66,13 +71,16 @@ class SykmeldingConsumerIT : WithKafka() {
                     aktivitet = listOf(TestData.behandlingsdagerAktivitet()),
                 )
 
-
             val recordMetadata = publishInput(record.sykmelding.id, record)
             val id = oppgaveConsumUntil(record.sykmelding.id, 1000L)
 
             id shouldBe sykmeldingId
-            verify(exactly = 1, timeout = 10000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))}
-            verify(exactly = 1, timeout = 1000) { sykmeldingConsumer.commitSync(0, recordMetadata.offset() + 1) }
+            verify(exactly = 1, timeout = 10000) {
+                sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))
+            }
+            verify(exactly = 1, timeout = 1000) {
+                sykmeldingConsumer.commitSync(0, recordMetadata.offset() + 1)
+            }
         }
     }
 
@@ -82,17 +90,16 @@ class SykmeldingConsumerIT : WithKafka() {
             val record = TestData.digitalSykmeldingRecord(aktivitet = listOf(TestData.gradertAktivitet()))
 
             val recordMetadata = publishInput(record.sykmelding.id, record)
-            verify(exactly = 1, timeout = 1000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata))) }
+            verify(exactly = 1, timeout = 1000) {
+                sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))
+            }
             verify(exactly = 0) { sykmeldingConsumer.commitSync(0, recordMetadata.offset()) }
 
-            verify (exactly = 0) {
-                oppgaveProducer.send(match {
-                    it.messageId == record.sykmelding.id
-                })
+            verify(exactly = 0) {
+                oppgaveProducer.send(match { it.messageId == record.sykmelding.id })
             }
         }
     }
-
 
     @Test
     fun `does not produce an oppgave for a digital sykmelding behandlingsdager when status is not OK`() {
@@ -100,64 +107,60 @@ class SykmeldingConsumerIT : WithKafka() {
             val okRecord = TestData.digitalSykmeldingRecord(aktivitet = listOf(TestData.behandlingsdagerAktivitet()))
             val record = okRecord.copy(validation = okRecord.validation.copy(status = RuleType.PENDING))
             val recordMetadata = publishInput(record.sykmelding.id, record)
-            verify(exactly = 1, timeout = 1000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata))) }
+            verify(exactly = 1, timeout = 1000) {
+                sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))
+            }
             verify(exactly = 0) { sykmeldingConsumer.commitSync(0, recordMetadata.offset()) }
 
-            verify (exactly = 0) {
-                oppgaveProducer.send(match {
-                    it.messageId == record.sykmelding.id
-                })
+            verify(exactly = 0) {
+                oppgaveProducer.send(match { it.messageId == record.sykmelding.id })
             }
         }
     }
 
     @Test
     fun `should commit offsets only of behandlingsdager in records`() = runWithSykmeldingConsumer {
-        val sykmeldingRecords = (0 until 10).map {
-            val aktivitet = if(it % 2 == 0) {
-                TestData.behandlingsdagerAktivitet()
-            } else
-                TestData.aktivitetIkkeMulig()
+        val sykmeldingRecords =
+            (0 until 10).map {
+                val aktivitet =
+                    if (it % 2 == 0) {
+                        TestData.behandlingsdagerAktivitet()
+                    } else TestData.aktivitetIkkeMulig()
 
-            TestData.digitalSykmeldingRecord(sykmeldingId = UUID.randomUUID().toString(), aktivitet = listOf(aktivitet))
-        }
+                TestData.digitalSykmeldingRecord(
+                    sykmeldingId = UUID.randomUUID().toString(),
+                    aktivitet = listOf(aktivitet),
+                )
+            }
         val recordsMetadata = sykmeldingRecords.map { digital ->
-            publishInput(
-                digital.sykmelding.id,
-                digital
-            )
+            publishInput(digital.sykmelding.id, digital)
         }
 
-        val nextOffsets = recordsMetadata.map { it.offset()
-        }.filterIndexed { index, _ ->  (index % 2) == 0 }.map { it + 1 }
+        val nextOffsets =
+            recordsMetadata.map { it.offset() }.filterIndexed { index, _ -> (index % 2) == 0 }.map { it + 1 }
 
         recordsMetadata.forEach {
-            verify(exactly = 1, timeout = 10000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(it))) }
-        }
-
-        verifyOrder {
-            nextOffsets.sorted().forEach {
-                sykmeldingConsumer.commitSync(0, it)
+            verify(exactly = 1, timeout = 10000) {
+                sykmeldingConsumer.commitSync(getNextOffsets(listOf(it)))
             }
         }
+
+        verifyOrder { nextOffsets.sorted().forEach { sykmeldingConsumer.commitSync(0, it) } }
     }
 
     @Test
     fun `does produce an oppgave for an xml sykmelding with behandlingsdager`() {
         runWithSykmeldingConsumer {
-            val record =
-                TestData.xmlSykmeldingRecord(
-                    aktivitet = listOf(TestData.behandlingsdagerAktivitet()),
-                )
+            val record = TestData.xmlSykmeldingRecord(aktivitet = listOf(TestData.behandlingsdagerAktivitet()))
 
             val recordMetadata = publishInput(record.sykmelding.id, record)
-            verify(exactly = 1, timeout = 10000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata))) }
+            verify(exactly = 1, timeout = 10000) {
+                sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))
+            }
             verify(exactly = 1) { sykmeldingConsumer.commitSync(0, recordMetadata.offset() + 1) }
 
             verify(exactly = 1) {
-                oppgaveProducer.send(match {
-                    it.messageId == record.sykmelding.id
-                })
+                oppgaveProducer.send(match { it.messageId == record.sykmelding.id })
             }
         }
     }
@@ -166,19 +169,22 @@ class SykmeldingConsumerIT : WithKafka() {
     fun `produce an oppgave for an xml sykmelding with behandlingsdager`() {
         runWithSykmeldingConsumer {
             val record =
-                TestData.xmlSykmeldingRecord(sykmeldingId = "1",
+                TestData.xmlSykmeldingRecord(
+                    sykmeldingId = "1",
                     aktivitet = listOf(TestData.behandlingsdagerAktivitet()),
                 )
 
             val recordMetadata = publishInput(record.sykmelding.id, record)
             val id = oppgaveConsumUntil(record.sykmelding.id, 1000L)
             id shouldEqual "1"
-            verify(exactly = 1, timeout = 10000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))}
-            verify(exactly = 1, timeout = 1000) { sykmeldingConsumer.commitSync(0, recordMetadata.offset() + 1) }
+            verify(exactly = 1, timeout = 10000) {
+                sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))
+            }
+            verify(exactly = 1, timeout = 1000) {
+                sykmeldingConsumer.commitSync(0, recordMetadata.offset() + 1)
+            }
         }
     }
-
-
 
     @Test
     fun `test correct offset commiting`() {
@@ -187,20 +193,33 @@ class SykmeldingConsumerIT : WithKafka() {
             val record = TestData.digitalSykmeldingRecord(aktivitet = listOf(TestData.behandlingsdagerAktivitet()))
             val recordMetadata = publishInput(record.sykmelding.id, record)
 
-
-            verify(exactly = 1, timeout = 1000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata))) }
-            verify(exactly = 1) { sykmeldingConsumer.commitSync(recordMetadata.partition(), recordMetadata.offset() + 1) }
+            verify(exactly = 1, timeout = 1000) {
+                sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))
+            }
+            verify(exactly = 1) {
+                sykmeldingConsumer.commitSync(
+                    recordMetadata.partition(),
+                    recordMetadata.offset() + 1,
+                )
+            }
         }
 
         runWithSykmeldingConsumer {
-            val record = TestData.digitalSykmeldingRecord(
-                aktivitet = listOf(TestData.behandlingsdagerAktivitet()),
-            )
+            val record = TestData.digitalSykmeldingRecord(aktivitet = listOf(TestData.behandlingsdagerAktivitet()))
 
             val recordMetadata = publishInput(record.sykmelding.id, record)
-            verify(exactly = 1, timeout = 1000) { sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata))) }
-            verify(exactly = 1) { sykmeldingConsumer.commitSync(recordMetadata.partition(), recordMetadata.offset() + 1) }
-            verify(exactly = 1) { sykmeldingConsumer.commitSync(recordMetadata.partition(), recordMetadata.offset()) }
+            verify(exactly = 1, timeout = 1000) {
+                sykmeldingConsumer.commitSync(getNextOffsets(listOf(recordMetadata)))
+            }
+            verify(exactly = 1) {
+                sykmeldingConsumer.commitSync(
+                    recordMetadata.partition(),
+                    recordMetadata.offset() + 1,
+                )
+            }
+            verify(exactly = 1) {
+                sykmeldingConsumer.commitSync(recordMetadata.partition(), recordMetadata.offset())
+            }
         }
     }
 
@@ -218,24 +237,35 @@ class SykmeldingConsumerIT : WithKafka() {
     private suspend fun publishInput(
         key: String,
         record: no.nav.tsm.sykmelding.input.core.model.SykmeldingRecord,
-    ) = withContext(Dispatchers.IO) {
-        sykmeldingProducer.send(
-            ProducerRecord(sykmeldingTopic, key, sykmeldingObjectMapper.writeValueAsBytes(record))
-        )
-            .get()
-    }
-
-    private suspend fun oppgaveConsumUntil(id: String, ms: Long): String? = withContext(Dispatchers.IO) {
-        var consumedId: String? = null
-        withTimeout(ms.milliseconds) {
-            while (consumedId != id) {
-                consumedId = oppgaveConsumer.poll(0.seconds.toJavaDuration())
-                    .map { testJsonObjectMapper.readValue<OpprettOppgaveKafkaMessage>(it.value()).messageId }
-                    .firstOrNull { it == id }
-            }
+    ) =
+        withContext(Dispatchers.IO) {
+            sykmeldingProducer
+                .send(
+                    ProducerRecord(
+                        sykmeldingTopic,
+                        key,
+                        sykmeldingObjectMapper.writeValueAsBytes(record),
+                    )
+                )
+                .get()
         }
-        consumedId
-    }
+
+    private suspend fun oppgaveConsumUntil(id: String, ms: Long): String? =
+        withContext(Dispatchers.IO) {
+            var consumedId: String? = null
+            withTimeout(ms.milliseconds) {
+                while (consumedId != id) {
+                    consumedId =
+                        oppgaveConsumer
+                            .poll(0.seconds.toJavaDuration())
+                            .map {
+                                testJsonObjectMapper.readValue<OpprettOppgaveKafkaMessage>(it.value()).messageId
+                            }
+                            .firstOrNull { it == id }
+                }
+            }
+            consumedId
+        }
 
     private fun runWithSykmeldingConsumer(block: suspend CoroutineScope.() -> Unit) = runTest {
         val job = launch { service.start() }
@@ -244,7 +274,7 @@ class SykmeldingConsumerIT : WithKafka() {
     }
 
     private fun getNextOffsets(recordMetadata: List<RecordMetadata>): Map<TopicPartition, OffsetAndMetadata> =
-        recordMetadata.associate { TopicPartition(it.topic(), it.partition()) to OffsetAndMetadata(it.offset() + 1, Optional.of(0), "" ) }
+        recordMetadata.associate {
+            TopicPartition(it.topic(), it.partition()) to OffsetAndMetadata(it.offset() + 1, Optional.of(0), "")
+        }
 }
-
-

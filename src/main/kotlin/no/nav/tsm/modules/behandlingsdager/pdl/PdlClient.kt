@@ -13,18 +13,16 @@ import io.ktor.http.*
 import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.di.annotations.*
 import io.opentelemetry.instrumentation.annotations.WithSpan
+import kotlin.reflect.KClass
 import no.nav.tsm.core.Environment
 import no.nav.tsm.ktor.auth.texas.TexasClient
 import no.nav.tsm.ktor.logger
-import kotlin.reflect.KClass
 
 sealed interface PdlClient {
     companion object {
-        val subtypes: List<KClass<out PdlClient>> = listOf(
-            PdlCloudClient::class,
-            PdlLocalClient::class,
-        )
+        val subtypes: List<KClass<out PdlClient>> = listOf(PdlCloudClient::class, PdlLocalClient::class)
     }
+
     enum class PdlErrors {
         NotFound,
         UnknownError,

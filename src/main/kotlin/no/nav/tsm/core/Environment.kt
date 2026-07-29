@@ -21,16 +21,11 @@ class Environment(
     val behandlingsdagerIds: List<String>,
 )
 
-data class ExternalConfig(
-    val tsmPdlCache: TsmPdlConfig,
-)
+data class ExternalConfig(val tsmPdlCache: TsmPdlConfig)
 
-data class TsmPdlConfig(
-    val url: String,
-)
+data class TsmPdlConfig(val url: String)
 
 class KafkaConfig(val config: Properties, val pollInterval: Duration)
-
 
 fun initializeEnvironment(config: ApplicationConfig): Environment {
     val kafkaProperties =
@@ -39,7 +34,7 @@ fun initializeEnvironment(config: ApplicationConfig): Environment {
                 Properties().apply {
                     config.config("kafka.config").toMap().forEach { this[it.key] = it.value }
                 },
-            pollInterval = config.property("kafka.sykmeldingConsumer.longPoll").getAs()
+            pollInterval = config.property("kafka.sykmeldingConsumer.longPoll").getAs(),
         )
     return Environment(
         runtime =
@@ -48,12 +43,7 @@ fun initializeEnvironment(config: ApplicationConfig): Environment {
                 name = config.property("app.name").getString(),
             ),
         kafka = kafkaProperties,
-        external = ExternalConfig(
-            TsmPdlConfig(
-                url = config.property("external.tsmPdlCache.url").getString()
-            )
-
-        ),
+        external = ExternalConfig(TsmPdlConfig(url = config.property("external.tsmPdlCache.url").getString())),
         behandlingsdagerIds =
             config.property("behandlingsdager.ids").getString().split(',').filter {
                 it.isNotEmpty()

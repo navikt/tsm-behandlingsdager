@@ -1,22 +1,22 @@
 package no.nav.tsm.modules.behandlingsdager.oppgave
 
-import arrow.core.Either
 import arrow.core.getOrElse
-import arrow.core.right
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlClient
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlIdentgruppe
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlPerson
 import no.nav.tsm.sykmelding.input.core.model.SykmeldingRecord
 import no.nav.tsm.sykmelding.input.core.model.metadata.MessageMetadata
 import no.nav.tsm.sykmelding.input.core.model.metadata.OrgIdType
-import java.time.DayOfWeek
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.UUID
 
 class OppgaveService(private val pdlClient: PdlClient, private val kafkaProducer: OppgaveProducer) {
     suspend fun createOppgave(sykmeldingRecord: SykmeldingRecord) {
-        val person = pdlClient.getPerson(sykmeldingRecord.sykmelding.pasient.fnr).getOrElse { throw RuntimeException("Fant ikke person for sykmelding: ${sykmeldingRecord.sykmelding.id}") }
+        val person =
+            pdlClient.getPerson(sykmeldingRecord.sykmelding.pasient.fnr).getOrElse {
+                throw RuntimeException("Fant ikke person for sykmelding: ${sykmeldingRecord.sykmelding.id}")
+            }
         val oppgave = toOppgaveKafkaMessage(person, sykmeldingRecord)
         kafkaProducer.send(oppgave)
     }
@@ -24,22 +24,27 @@ class OppgaveService(private val pdlClient: PdlClient, private val kafkaProducer
 
 private fun toOppgaveKafkaMessage(
     person: PdlPerson,
-    sykmeldingRecord: SykmeldingRecord
+    sykmeldingRecord: SykmeldingRecord,
 ): OpprettOppgaveKafkaMessage {
-        return OpprettOppgaveKafkaMessage(
+    return OpprettOppgaveKafkaMessage(
         messageId = sykmeldingRecord.sykmelding.id,
         aktoerId = person.identer.first { !it.historisk && it.gruppe == PdlIdentgruppe.AKTORID }.ident,
         tildeltEnhetsnr = "",
         opprettetAvEnhetsnr = "9999",
         behandlesAvApplikasjon = "FS22",
-        orgnr = when(val record = sykmeldingRecord) {
-            is SykmeldingRecord.Digital -> record.metadata.orgnummer
-            is SykmeldingRecord.Xml -> when (val meta = record.metadata) {
-                is MessageMetadata.Xml.Emottak.EDI -> meta.sender.underOrganisasjon?.ids?.firstOrNull { it.type == OrgIdType.ENH}?.id ?: meta.sender.ids.firstOrNull { it.type == OrgIdType.ENH }?.id ?: ""
+        orgnr =
+            when (val record = sykmeldingRecord) {
+                is SykmeldingRecord.Digital -> record.metadata.orgnummer
+                is SykmeldingRecord.Xml ->
+                    when (val meta = record.metadata) {
+                        is MessageMetadata.Xml.Emottak.EDI ->
+                            meta.sender.underOrganisasjon?.ids?.firstOrNull { it.type == OrgIdType.ENH }?.id
+                                ?: meta.sender.ids.firstOrNull { it.type == OrgIdType.ENH }?.id
+                                ?: ""
+                        else -> ""
+                    }
                 else -> ""
-            }
-            else -> ""
-        },
+            },
         beskrivelse =
             "Manuell behandling av sykmelding grunnet følgende regler: Sykmelding inneholder behandlingsdager (felt 4.4).",
         temagruppe = "ANY",
@@ -50,15 +55,11 @@ private fun toOppgaveKafkaMessage(
         mappeId = 1,
         aktivDato = DateTimeFormatter.ISO_DATE.format(LocalDate.now()),
         fristFerdigstillelse =
-            DateTimeFormatter.ISO_DATE.format(
-                finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4))
-            ),
+            DateTimeFormatter.ISO_DATE.format(finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4))),
         prioritet = PrioritetType.NORM,
         metadata = mapOf(),
-        )
+    )
 }
-
-
 
 fun finnFristForFerdigstillingAvOppgave(ferdistilleDato: LocalDate): LocalDate {
     return setToWorkDay(ferdistilleDato)

@@ -3,8 +3,8 @@ package no.nav.tsm.modules.behandlingsdager.pdl
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import no.nav.tsm.ktor.logger
 import java.time.LocalDate
+import no.nav.tsm.ktor.logger
 
 class PdlLocalClient : PdlClient {
     private val logger = logger()
@@ -17,21 +17,21 @@ class PdlLocalClient : PdlClient {
 
         logger.info("[PDL Mock]: Got request for ident $ident, returning mock person")
         return PdlPerson(
-            foedselsdato = LocalDate.parse("1990-01-01"),
-            identer =
-                listOf(
-                    PdlIdent(
-                        ident = ident,
-                        gruppe = PdlIdentgruppe.FOLKEREGISTERIDENT,
-                        historisk = false,
+                foedselsdato = LocalDate.parse("1990-01-01"),
+                identer =
+                    listOf(
+                        PdlIdent(
+                            ident = ident,
+                            gruppe = PdlIdentgruppe.FOLKEREGISTERIDENT,
+                            historisk = false,
+                        ),
+                        PdlIdent(
+                            ident = "12345678912345",
+                            gruppe = PdlIdentgruppe.AKTORID,
+                            historisk = false,
+                        ),
                     ),
-                    PdlIdent(
-                        ident = "12345678912345",
-                        gruppe = PdlIdentgruppe.AKTORID,
-                        historisk = false,
-                    ),
-                ),
-        )
+            )
             .right()
     }
 }

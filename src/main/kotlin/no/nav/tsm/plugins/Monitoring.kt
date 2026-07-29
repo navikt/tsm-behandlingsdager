@@ -15,9 +15,7 @@ fun Application.configureMonitoring() {
     install(KHealth) {
         healthChecks { healthCheckPath = "/internal/health/alive" }
 
-        readyChecks {
-            readyCheckPath = "/internal/health/ready"
-        }
+        readyChecks { readyCheckPath = "/internal/health/ready" }
     }
     install(ShutDownUrl.ApplicationCallPlugin) {
         shutDownUrl = "/internal/shutdown"

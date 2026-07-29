@@ -37,25 +37,18 @@ object TestData {
         aktorIdHistorisk: Boolean = false,
         fnr: String = DEFAULT_FNR,
     ): PdlPerson {
-        val identer =
-            buildList {
+        val identer = buildList {
+            add(PdlIdent(ident = fnr, gruppe = PdlIdentgruppe.FOLKEREGISTERIDENT, historisk = false))
+            if (aktorId != null) {
                 add(
                     PdlIdent(
-                        ident = fnr,
-                        gruppe = PdlIdentgruppe.FOLKEREGISTERIDENT,
-                        historisk = false,
+                        ident = aktorId,
+                        gruppe = PdlIdentgruppe.AKTORID,
+                        historisk = aktorIdHistorisk,
                     )
                 )
-                if (aktorId != null) {
-                    add(
-                        PdlIdent(
-                            ident = aktorId,
-                            gruppe = PdlIdentgruppe.AKTORID,
-                            historisk = aktorIdHistorisk,
-                        )
-                    )
-                }
             }
+        }
         return PdlPerson(foedselsdato = LocalDate.parse("1990-01-01"), identer = identer)
     }
 
@@ -63,17 +56,24 @@ object TestData {
         fom: LocalDate = LocalDate.now(),
         tom: LocalDate = LocalDate.now().plusDays(7),
         antall: Int = 1,
-    ): Aktivitet.Behandlingsdager =
-        Aktivitet.Behandlingsdager(antallBehandlingsdager = antall, fom = fom, tom = tom)
+    ): Aktivitet.Behandlingsdager = Aktivitet.Behandlingsdager(antallBehandlingsdager = antall, fom = fom, tom = tom)
 
     fun gradertAktivitet(
         fom: LocalDate = LocalDate.now(),
         tom: LocalDate = LocalDate.now().plusDays(7),
-    ): Aktivitet.Gradert =
-        Aktivitet.Gradert(grad = 50, fom = fom, tom = tom, reisetilskudd = false)
+    ): Aktivitet.Gradert = Aktivitet.Gradert(grad = 50, fom = fom, tom = tom, reisetilskudd = false)
 
-    fun aktivitetIkkeMulig(fom: LocalDate = LocalDate.now(), tom: LocalDate = LocalDate.now().plusDays(7)
-    ) : Aktivitet.IkkeMulig = Aktivitet.IkkeMulig(fom = fom, tom = tom, medisinskArsak = null, arbeidsrelatertArsak = null)
+    fun aktivitetIkkeMulig(
+        fom: LocalDate = LocalDate.now(),
+        tom: LocalDate = LocalDate.now().plusDays(7),
+    ): Aktivitet.IkkeMulig =
+        Aktivitet.IkkeMulig(
+            fom = fom,
+            tom = tom,
+            medisinskArsak = null,
+            arbeidsrelatertArsak = null,
+        )
+
     fun digitalSykmeldingRecord(
         sykmeldingId: String = UUID.randomUUID().toString(),
         fnr: String = DEFAULT_FNR,
@@ -127,8 +127,7 @@ object TestData {
                     bistandNav = null,
                     utdypendeSporsmal = null,
                 ),
-            validation =
-                ValidationResult(status = RuleType.OK, timestamp = now, rules = emptyList()),
+            validation = ValidationResult(status = RuleType.OK, timestamp = now, rules = emptyList()),
         )
     }
 
@@ -199,8 +198,7 @@ object TestData {
                     tilbakedatering = null,
                     utdypendeOpplysninger = null,
                 ),
-            validation =
-                ValidationResult(status = RuleType.OK, timestamp = now, rules = emptyList()),
+            validation = ValidationResult(status = RuleType.OK, timestamp = now, rules = emptyList()),
         )
     }
 }

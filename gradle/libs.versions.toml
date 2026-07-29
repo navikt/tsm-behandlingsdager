@@ -1,16 +1,16 @@
 [versions]
-kotlin = "2.3.21"
-logback = "1.5.32"
+kotlin = "2.4.10"
+logback = "1.6.1"
 logbackEncoder = "9.0"
-prometheus = "1.16.5"
+prometheus = "1.17.0"
 kafka = "4.3.0"
-mockk = "1.14.9"
+mockk = "1.14.11"
 testcontainers = "2.0.5"
-otel = "2.28.1"
+otel = "2.30.0"
 kotest-assertions = "6.1.11"
-tsm-sykmeldinger-input = "26"
+tsm-sykmeldinger-input = "27"
 khealth = "3.0.2"
-arrow = "2.2.2.1"
+arrow = "2.2.3"
 coroutines = "1.11.0"
 
 [libraries]
@@ -37,6 +37,6 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-spotless = { id = "com.diffplug.spotless", version = "8.5.1" }
-detekt = { id = "dev.detekt", version = "2.0.0-alpha.3" }
-gradle-versions = { id = "com.github.ben-manes.versions", version = "0.54.0" }
+spotless = { id = "com.diffplug.spotless", version = "8.9.0" }
+detekt = { id = "dev.detekt", version = "2.0.0-alpha.5" }
+gradle-versions = { id = "com.github.ben-manes.versions", version = "0.56.0" }

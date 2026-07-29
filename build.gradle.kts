@@ -1,11 +1,12 @@
+import com.diffplug.gradle.spotless.SpotlessExtension
 import dev.detekt.gradle.Detekt
+import org.gradle.kotlin.dsl.configure
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(ktorLibs.plugins.ktor)
     alias(libs.plugins.spotless)
     alias(libs.plugins.detekt)
-    alias(libs.plugins.gradle.versions)
 }
 
 group = "no.nav.tsm"
@@ -48,6 +49,28 @@ dependencies {
     testImplementation(ktorLibs.server.testHost)
     testImplementation(ktorLibs.client.mock)
     testImplementation(libs.kotlinx.coroutines.test)
+}
+
+tasks {
+    shadowJar {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        mergeServiceFiles {}
+        from("src/main/resources/logback.xml") {
+            into("/")
+        }
+    }
+
+    configure<SpotlessExtension> {
+        kotlin {
+            ktfmt("0.64").kotlinlangStyle().configure {
+                it.setMaxWidth(120)
+                it.setContinuationIndent(4)
+            }
+        }
+        check {
+            dependsOn("spotlessApply")
+        }
+    }
 }
 
 tasks.withType<Detekt>().configureEach {

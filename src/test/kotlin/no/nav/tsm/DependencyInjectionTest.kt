@@ -3,33 +3,23 @@ package no.nav.tsm
 import com.typesafe.config.ConfigFactory
 import io.ktor.server.config.*
 import io.ktor.server.testing.*
-import no.nav.tsm.utils.WithKafka
 import kotlin.test.Test
+import no.nav.tsm.utils.WithKafka
 
 class DependencyInjectionTest : WithKafka() {
 
-    @Test
-    fun `Test local config`() =
-        assertAllDependenciesResolve("application-local.conf")
+    @Test fun `Test local config`() = assertAllDependenciesResolve("application-local.conf")
 
-    @Test
-    fun `Test for dev-gcp`() =
-        assertAllDependenciesResolve("application.conf", naisEnvironment("dev-gcp"))
+    @Test fun `Test for dev-gcp`() = assertAllDependenciesResolve("application.conf", naisEnvironment("dev-gcp"))
 
-    @Test
-    fun `Test for prod-gcp`() =
-        assertAllDependenciesResolve("application.conf", naisEnvironment("prod-gcp"))
+    @Test fun `Test for prod-gcp`() = assertAllDependenciesResolve("application.conf", naisEnvironment("prod-gcp"))
 
     private fun assertAllDependenciesResolve(
         configFile: String,
         env: Map<String, String> = emptyMap(),
     ) = testApplication {
-        environment {
-            config = applicationConfig(configFile, env)
-        }
-        application {
-            module()
-        }
+        environment { config = applicationConfig(configFile, env) }
+        application { module() }
         startApplication()
     }
 
@@ -57,6 +47,6 @@ class DependencyInjectionTest : WithKafka() {
             "NAIS_POD_NAME" to "tsm-behandlingsdager-test",
             "NAIS_CLUSTER_NAME" to cluster,
             "NAIS_TOKEN_ENDPOINT" to "http://localhost:7164/api/v1/token",
-            "BEHANDLINGSDAGER_IDS" to ""
+            "BEHANDLINGSDAGER_IDS" to "",
         )
 }

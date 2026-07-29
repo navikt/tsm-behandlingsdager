@@ -19,7 +19,6 @@ fun Application.configureDependencies() {
         }
         provide(TexasClient::class)
         provide<Environment> { initializeEnvironment(config) }
-
     }
 }
 
