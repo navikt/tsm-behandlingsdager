@@ -22,16 +22,11 @@ class Environment(
 )
 
 data class ExternalConfig(
-    val texasConfig: TexasConfig,
     val tsmPdlCache: TsmPdlConfig,
 )
 
 data class TsmPdlConfig(
     val url: String,
-)
-
-data class TexasConfig(
-    val tokenEndpoint: String,
 )
 
 class KafkaConfig(val config: Properties, val pollInterval: Duration)
@@ -54,9 +49,6 @@ fun initializeEnvironment(config: ApplicationConfig): Environment {
             ),
         kafka = kafkaProperties,
         external = ExternalConfig(
-            texasConfig = TexasConfig(
-                tokenEndpoint = config.property("external.texas.tokenEndpoint").getString(),
-            ),
             TsmPdlConfig(
                 url = config.property("external.tsmPdlCache.url").getString()
             )

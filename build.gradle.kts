@@ -1,4 +1,3 @@
-import com.diffplug.gradle.spotless.SpotlessExtension
 import dev.detekt.gradle.Detekt
 
 plugins {
@@ -25,19 +24,22 @@ dependencies {
     implementation(ktorLibs.server.netty)
     implementation(ktorLibs.server.di)
     implementation(ktorLibs.server.metrics.micrometer)
-    implementation(ktorLibs.client.apache5)
     implementation(ktorLibs.serialization.jackson)
+    implementation(ktorLibs.client.apache5)
     implementation(ktorLibs.client.core)
     implementation(ktorLibs.client.contentNegotiation)
     implementation(libs.kafka.client)
+    implementation(libs.arrow.core)
+    implementation(libs.arrow.fx.coroutines)
+
     implementation(libs.logback.classic)
     implementation(libs.logback.encoder)
     implementation(libs.khealth)
     implementation(libs.micrometer.registry.prometheus)
     implementation(libs.otel.annotations)
+
     implementation(libs.tsm.sykmeldinger.input)
-    implementation(libs.arrow.core)
-    implementation(libs.arrow.fx.coroutines)
+    implementation(tsmKtorLibs.core)
 
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.mockk)

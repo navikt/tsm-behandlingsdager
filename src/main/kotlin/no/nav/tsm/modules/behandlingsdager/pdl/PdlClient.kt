@@ -14,9 +14,8 @@ import io.ktor.serialization.jackson.*
 import io.ktor.server.plugins.di.annotations.*
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import no.nav.tsm.core.Environment
-import no.nav.tsm.core.TsmPdlConfig
-import no.nav.tsm.core.logger
-import no.nav.tsm.plugins.auth.TexasClient
+import no.nav.tsm.ktor.auth.texas.TexasClient
+import no.nav.tsm.ktor.logger
 import kotlin.reflect.KClass
 
 sealed interface PdlClient {

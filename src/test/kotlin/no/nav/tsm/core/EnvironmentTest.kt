@@ -34,7 +34,6 @@ class EnvironmentTest {
 
         environment.runtime.env shouldBe RuntimeEnvironments.PROD
         environment.runtime.name shouldBe "tsm-behandlingsdager-123"
-        environment.external.texasConfig.tokenEndpoint shouldBe "https://texas/token"
         environment.external.tsmPdlCache.url shouldBe "http://tsm-pdl-cache"
         environment.kafka.config["bootstrap.servers"] shouldBe "kafka-1:9092,kafka-2:9092"
     }

@@ -3,7 +3,7 @@ package no.nav.tsm.modules.behandlingsdager.sykmelding
 import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.coroutines.*
 import no.nav.tsm.core.Environment
-import no.nav.tsm.core.logger
+import no.nav.tsm.ktor.logger
 import no.nav.tsm.modules.behandlingsdager.oppgave.OppgaveService
 import no.nav.tsm.sykmelding.input.core.model.Aktivitet
 import no.nav.tsm.sykmelding.input.core.model.RuleType

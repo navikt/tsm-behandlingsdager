@@ -33,7 +33,6 @@ abstract class WithKafka {
                 kafka = KafkaConfig(config = config, pollInterval = 0.seconds),
                 external =
                     ExternalConfig(
-                        texasConfig = TexasConfig(tokenEndpoint = "https://test.token/token"),
                         tsmPdlCache = TsmPdlConfig(url = "https://test.pdl"),
                     ),
                 behandlingsdagerIds = listOf("1", "2")

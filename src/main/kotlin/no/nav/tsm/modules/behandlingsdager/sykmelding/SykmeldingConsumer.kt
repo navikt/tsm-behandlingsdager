@@ -1,7 +1,7 @@
 package no.nav.tsm.modules.behandlingsdager.sykmelding
 
 import no.nav.tsm.core.Environment
-import no.nav.tsm.core.logger
+import no.nav.tsm.ktor.logger
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRecords
 import org.apache.kafka.clients.consumer.KafkaConsumer

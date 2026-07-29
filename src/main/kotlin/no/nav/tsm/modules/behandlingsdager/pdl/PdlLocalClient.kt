@@ -3,8 +3,8 @@ package no.nav.tsm.modules.behandlingsdager.pdl
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import no.nav.tsm.ktor.logger
 import java.time.LocalDate
-import no.nav.tsm.core.logger
 
 class PdlLocalClient : PdlClient {
     private val logger = logger()

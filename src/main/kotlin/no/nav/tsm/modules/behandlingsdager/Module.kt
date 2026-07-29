@@ -3,9 +3,8 @@ package no.nav.tsm.modules.behandlingsdager
 import io.ktor.server.application.Application
 import io.ktor.server.application.ApplicationStarted
 import io.ktor.server.plugins.di.dependencies
-import io.ktor.server.plugins.di.provide
 import kotlinx.coroutines.launch
-import no.nav.tsm.core.provideDynamic
+import no.nav.tsm.ktor.di.dynamicDependencies
 import no.nav.tsm.modules.behandlingsdager.oppgave.OppgaveProducer
 import no.nav.tsm.modules.behandlingsdager.oppgave.OppgaveService
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlClient
@@ -28,12 +27,16 @@ private fun Application.configureConsumer() {
 }
 
 private fun Application.configureDependencies() {
+    dynamicDependencies {
+        cloud {
+            provide<PdlClient>(PdlCloudClient::class)
+        }
+        local {
+            provide<PdlClient>(PdlLocalClient::class)
+        }
+    }
 
     dependencies {
-        provideDynamic<PdlClient>(
-            local = PdlLocalClient::class,
-            cloud = PdlCloudClient::class,
-        )
         provide(OppgaveProducer::class)
         provide(OppgaveService::class)
         provide(SykmeldingConsumer::class)

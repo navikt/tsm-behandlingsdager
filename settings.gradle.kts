@@ -1,6 +1,7 @@
 rootProject.name = "behandlingsdager"
 
 val ktorVersion = "3.5.1"
+val tsmKtorVersion = "1.0.0"
 
 dependencyResolutionManagement {
     repositories {
@@ -10,6 +11,7 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("ktorLibs").from("io.ktor:ktor-version-catalog:${ktorVersion}")
+        create("tsmKtorLibs").from("no.nav.tsm:ktor-version-catalog:${tsmKtorVersion}")
     }
 }
 
