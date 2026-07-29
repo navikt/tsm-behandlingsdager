@@ -3,7 +3,7 @@ import dev.detekt.gradle.Detekt
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.ktor)
+    alias(ktorLibs.plugins.ktor)
     alias(libs.plugins.spotless)
     alias(libs.plugins.detekt)
     alias(libs.plugins.gradle.versions)
@@ -20,28 +20,22 @@ kotlin {
     jvmToolchain(21)
 }
 
-repositories {
-    mavenCentral()
-    maven { url = uri("https://jitpack.io") }
-    maven { url = uri("https://github-package-registry-mirror.gc.nav.no/cached/maven-release") }
-}
-
 dependencies {
-    implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.netty)
+    implementation(ktorLibs.server.core)
+    implementation(ktorLibs.server.netty)
+    implementation(ktorLibs.server.di)
+    implementation(ktorLibs.server.metrics.micrometer)
+    implementation(ktorLibs.client.apache5)
+    implementation(ktorLibs.serialization.jackson)
+    implementation(ktorLibs.client.core)
+    implementation(ktorLibs.client.contentNegotiation)
     implementation(libs.kafka.client)
-    implementation(libs.ktor.server.di)
     implementation(libs.logback.classic)
     implementation(libs.logback.encoder)
     implementation(libs.khealth)
     implementation(libs.micrometer.registry.prometheus)
-    implementation(libs.ktor.server.metrics.micrometer)
-    implementation(libs.ktor.client.apache)
     implementation(libs.otel.annotations)
     implementation(libs.tsm.sykmeldinger.input)
-    implementation(libs.ktor.serialization.jackson)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.content.negotiation)
     implementation(libs.arrow.core)
     implementation(libs.arrow.fx.coroutines)
 
@@ -49,8 +43,8 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.kotest.assertions)
     testImplementation(libs.testcontainers.kafka)
-    testImplementation(libs.ktor.server.test.host)
-    testImplementation(libs.ktor.client.test.mock)
+    testImplementation(ktorLibs.server.testHost)
+    testImplementation(ktorLibs.client.mock)
     testImplementation(libs.kotlinx.coroutines.test)
 }
 
