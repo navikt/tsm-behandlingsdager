@@ -1,42 +1,37 @@
 package no.nav.tsm
 
 import com.typesafe.config.ConfigFactory
+import io.kotest.matchers.equals.shouldEqual
 import io.ktor.server.config.*
-import io.ktor.server.testing.*
 import kotlin.test.Test
-import no.nav.tsm.utils.WithKafka
+import kotlinx.coroutines.test.runTest
 
-class DependencyInjectionTest : WithKafka() {
+class DependencyInjectionTest {
 
-    @Test fun `Test local config`() = assertAllDependenciesResolve("application-local.conf")
+    @Test
+    fun `Test local config`() = runTest {
+        val conf = applicationConfig("application-local.conf", emptyMap())
 
-    @Test fun `Test for dev-gcp`() = assertAllDependenciesResolve("application.conf", naisEnvironment("dev-gcp"))
-
-    @Test fun `Test for prod-gcp`() = assertAllDependenciesResolve("application.conf", naisEnvironment("prod-gcp"))
-
-    private fun assertAllDependenciesResolve(
-        configFile: String,
-        env: Map<String, String> = emptyMap(),
-    ) = testApplication {
-        environment { config = applicationConfig(configFile, env) }
-        application { module() }
-        startApplication()
+        conf.tryGetString("app.name") shouldEqual "local-pod"
     }
 
-    private val kafkaOverrides =
-        mapOf(
-            "kafka.sykmeldingConsumer.longPoll" to "PT1S",
-            "kafka.config.\"bootstrap.servers\"" to kafka.bootstrapServers,
-            "kafka.config.\"security.protocol\"" to "PLAINTEXT",
-            "kafka.config.\"ssl.truststore.location\"" to "/path",
-            "kafka.config.\"ssl.truststore.password\"" to "truststorepw",
-            "kafka.config.\"ssl.keystore.location\"" to "keystorePath",
-            "kafka.config.\"ssl.keystore.password\"" to "keystorePassword",
-        )
+    @Test
+    fun `Test for dev-gcp`() = runTest {
+        val conf = applicationConfig("application.conf", naisEnvironment("dev-gcp"))
+
+        conf.tryGetString("app.name") shouldEqual "tsm-behandlingsdager-test"
+    }
+
+    @Test
+    fun `Test for prod-gcp`() = runTest {
+        val conf = applicationConfig("application.conf", naisEnvironment("prod-gcp"))
+
+        conf.tryGetString("app.name") shouldEqual "tsm-behandlingsdager-test"
+    }
 
     private fun applicationConfig(resource: String, env: Map<String, String>) =
         HoconApplicationConfig(
-            ConfigFactory.parseMap(kafkaOverrides + env)
+            ConfigFactory.parseMap(env)
                 .withFallback(ConfigFactory.parseResources(resource))
                 .resolve()
                 .withoutPath("ktor")

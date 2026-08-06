@@ -4,6 +4,7 @@ import arrow.core.getOrElse
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import no.nav.tsm.ktor.kafka.producer.KafkaRecordProducer
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlClient
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlIdentgruppe
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlPerson
@@ -11,14 +12,17 @@ import no.nav.tsm.sykmelding.input.core.model.SykmeldingRecord
 import no.nav.tsm.sykmelding.input.core.model.metadata.MessageMetadata
 import no.nav.tsm.sykmelding.input.core.model.metadata.OrgIdType
 
-class OppgaveService(private val pdlClient: PdlClient, private val kafkaProducer: OppgaveProducer) {
+class OppgaveService(
+    private val pdlClient: PdlClient,
+    private val kafkaProducer: KafkaRecordProducer<OpprettOppgaveKafkaMessage>,
+) {
     suspend fun createOppgave(sykmeldingRecord: SykmeldingRecord) {
         val person =
             pdlClient.getPerson(sykmeldingRecord.sykmelding.pasient.fnr).getOrElse {
                 throw RuntimeException("Fant ikke person for sykmelding: ${sykmeldingRecord.sykmelding.id}")
             }
         val oppgave = toOppgaveKafkaMessage(person, sykmeldingRecord)
-        kafkaProducer.send(oppgave)
+        kafkaProducer.send(oppgave.messageId, oppgave)
     }
 }
 
