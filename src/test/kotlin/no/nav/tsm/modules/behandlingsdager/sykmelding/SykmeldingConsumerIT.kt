@@ -1,7 +1,6 @@
 package no.nav.tsm.modules.behandlingsdager.sykmelding
 
 import arrow.core.right
-import com.fasterxml.jackson.module.kotlin.readValue
 import io.kotest.matchers.equals.shouldEqual
 import io.kotest.matchers.shouldBe
 import io.mockk.*
@@ -33,6 +32,7 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.serialization.StringSerializer
+import tools.jackson.module.kotlin.readValue
 
 class SykmeldingConsumerIT : WithKafka() {
 

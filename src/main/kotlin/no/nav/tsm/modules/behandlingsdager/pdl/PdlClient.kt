@@ -3,19 +3,17 @@ package no.nav.tsm.modules.behandlingsdager.pdl
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.serialization.jackson.*
+import io.ktor.serialization.jackson3.jackson
 import io.ktor.server.plugins.di.annotations.*
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlin.reflect.KClass
 import no.nav.tsm.core.Environment
-import no.nav.tsm.ktor.auth.texas.TexasClient
+import no.nav.tsm.ktor.auth.texas.Texas
 import no.nav.tsm.ktor.logger
 
 sealed interface PdlClient {
@@ -33,7 +31,7 @@ sealed interface PdlClient {
 
 class PdlCloudClient(
     @Named("RetryHttpClient") httpClient: HttpClient,
-    private val texasClient: TexasClient,
+    private val texasClient: Texas,
     env: Environment,
 ) : PdlClient {
 
@@ -41,12 +39,7 @@ class PdlCloudClient(
     private val logger = logger()
     private val pdlHttpClient = httpClient.config {
         install(ContentNegotiation) {
-            jackson {
-                registerModule(JavaTimeModule())
-
-                // tsm-pdl-cache responds with some values we don't care about
-                configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
+            jackson {}
         }
     }
 

@@ -2,14 +2,12 @@
 kotlin = "2.4.10"
 logback = "1.6.1"
 logbackEncoder = "9.0"
-prometheus = "1.17.0"
 kafka = "4.3.0"
 mockk = "1.14.11"
 testcontainers = "2.0.5"
 otel = "2.30.0"
 kotest-assertions = "6.1.11"
-tsm-sykmeldinger-input = "27"
-khealth = "3.0.2"
+tsm-sykmeldinger-input = "29"
 arrow = "2.2.3"
 coroutines = "1.11.0"
 
@@ -19,10 +17,8 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref = "arrow" }
 
 # Monitoring and observability
-khealth = { module = "dev.hayden:khealth", version.ref = "khealth" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logbackEncoder" }
-micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "prometheus" }
 otel-annotations = { module = "io.opentelemetry.instrumentation:opentelemetry-instrumentation-annotations", version.ref = "otel" }
 
 # Tsm dependencies
@@ -39,4 +35,3 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 spotless = { id = "com.diffplug.spotless", version = "8.9.0" }
 detekt = { id = "dev.detekt", version = "2.0.0-alpha.5" }
-gradle-versions = { id = "com.github.ben-manes.versions", version = "0.56.0" }
