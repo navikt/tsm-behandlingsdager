@@ -7,7 +7,7 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.di.*
 import no.nav.tsm.core.Environment
 import no.nav.tsm.core.initializeEnvironment
-import no.nav.tsm.ktor.auth.texas.TexasClient
+import no.nav.tsm.ktor.auth.texas.Texas
 
 fun Application.configureDependencies() {
     val config = environment.config
@@ -17,7 +17,7 @@ fun Application.configureDependencies() {
         provide<HttpClient>("RetryHttpClient") {
             createExternalApiHttpClient(resolve<HttpClient>())
         }
-        provide(TexasClient::class)
+        provide(Texas::class)
         provide<Environment> { initializeEnvironment(config) }
     }
 }

@@ -25,7 +25,7 @@ dependencies {
     implementation(ktorLibs.server.netty)
     implementation(ktorLibs.server.di)
     implementation(ktorLibs.server.metrics.micrometer)
-    implementation(ktorLibs.serialization.jackson)
+    implementation(ktorLibs.serialization.jackson3)
     implementation(ktorLibs.client.apache5)
     implementation(ktorLibs.client.core)
     implementation(ktorLibs.client.contentNegotiation)
@@ -35,13 +35,14 @@ dependencies {
 
     implementation(libs.logback.classic)
     implementation(libs.logback.encoder)
-    implementation(libs.khealth)
-    implementation(libs.micrometer.registry.prometheus)
     implementation(libs.otel.annotations)
 
     implementation(libs.tsm.sykmeldinger.input)
     implementation(tsmKtorLibs.core)
+    implementation(tsmKtorLibs.kafka)
+    implementation(tsmKtorLibs.kafka.sykmeldinger)
 
+    testImplementation(tsmKtorLibs.kafka.test)
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotest.assertions)

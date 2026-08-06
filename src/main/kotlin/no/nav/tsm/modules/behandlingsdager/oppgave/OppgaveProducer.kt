@@ -1,8 +1,5 @@
 package no.nav.tsm.modules.behandlingsdager.oppgave
 
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.util.*
 import no.nav.tsm.core.Environment
 import no.nav.tsm.ktor.logger
@@ -11,14 +8,11 @@ import org.apache.kafka.clients.producer.ProducerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArraySerializer
 import org.apache.kafka.common.serialization.StringSerializer
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class OppgaveProducer(env: Environment) {
     private val log = logger()
-    private val objectMapper =
-        jacksonObjectMapper().apply {
-            registerModule(JavaTimeModule())
-            configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        }
+    private val objectMapper = jacksonObjectMapper()
 
     private val kafkaProducer: KafkaProducer<String, ByteArray>
     private val topic = "teamsykmelding.oppgave-produser-oppgave"

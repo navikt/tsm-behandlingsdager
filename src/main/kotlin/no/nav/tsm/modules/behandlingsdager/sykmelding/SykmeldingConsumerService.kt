@@ -1,6 +1,5 @@
 package no.nav.tsm.modules.behandlingsdager.sykmelding
 
-import com.fasterxml.jackson.module.kotlin.readValue
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.seconds
 import kotlinx.coroutines.*
@@ -12,6 +11,7 @@ import no.nav.tsm.sykmelding.input.core.model.RuleType
 import no.nav.tsm.sykmelding.input.core.model.SykmeldingRecord
 import no.nav.tsm.sykmelding.input.core.model.sykmeldingObjectMapper
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import tools.jackson.module.kotlin.readValue
 
 class SykmeldingConsumerService(
     val sykmeldingConsumer: SykmeldingConsumer,
