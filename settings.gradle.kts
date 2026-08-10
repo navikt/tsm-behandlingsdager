@@ -1,6 +1,6 @@
 rootProject.name = "behandlingsdager"
 
-val ktorVersion = "3.5.1"
+val ktorVersion = "3.5.2"
 val tsmKtorVersion = "1.1.3"
 
 pluginManagement {
@@ -11,7 +11,7 @@ pluginManagement {
 }
 
 plugins {
-    id("io.github.ben-manes.versions.settings") version "0.56.0"
+    id("io.github.ben-manes.versions.settings") version "0.60.0"
 }
 
 dependencyResolutionManagement {
