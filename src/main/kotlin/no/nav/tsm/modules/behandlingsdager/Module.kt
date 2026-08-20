@@ -29,7 +29,7 @@ private fun Application.configureConsumer() {
         clientId = env.runtime.name
         groupId = "tsm-behandlingsdager-consumer"
         pollDuration = env.sykmeldingerConsumer.pollInterval
-        onRecord = { record ->
+        onRecord = { record, _ ->
             sykmeldingConsumerService.handleRecord(record)
         }
         onTombstone = { meta ->
