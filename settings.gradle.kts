@@ -1,7 +1,7 @@
 rootProject.name = "behandlingsdager"
 
 val ktorVersion = "3.5.2"
-val tsmKtorVersion = "1.2.10"
+val tsmKtorVersion = "1.3.0"
 
 pluginManagement {
     repositories {
