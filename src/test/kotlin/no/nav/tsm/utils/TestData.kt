@@ -126,6 +126,7 @@ object TestData {
                     tilbakedatering = null,
                     bistandNav = null,
                     utdypendeSporsmal = null,
+                    prognose = null,
                 ),
             validation = ValidationResult(status = RuleType.OK, timestamp = now, rules = emptyList()),
         )

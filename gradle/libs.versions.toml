@@ -7,7 +7,7 @@ mockk = "1.14.11"
 testcontainers = "2.0.5"
 otel = "2.31.0"
 kotest-assertions = "6.2.4"
-tsm-sykmeldinger-input = "29"
+tsm-sykmeldinger-input = "30"
 arrow = "2.2.3"
 coroutines = "1.11.0"
 
