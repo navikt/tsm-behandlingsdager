@@ -1,4 +1,4 @@
-rootProject.name = "behandlingsdager"
+rootProject.name = "tsm-behandlingsdager"
 
 val ktorVersion = "3.5.2"
 val tsmKtorVersion = "1.3.0"
