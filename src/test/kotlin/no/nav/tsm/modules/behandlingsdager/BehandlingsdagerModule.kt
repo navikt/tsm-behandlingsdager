@@ -9,6 +9,12 @@ import io.ktor.server.testing.*
 import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
+import java.util.*
+import kotlin.test.AfterTest
+import kotlin.test.Test
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.toJavaDuration
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -27,12 +33,6 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.ByteArrayDeserializer
 import org.apache.kafka.common.serialization.StringDeserializer
 import tools.jackson.module.kotlin.readValue
-import java.util.*
-import kotlin.test.AfterTest
-import kotlin.test.Test
-import kotlin.time.Duration.Companion.milliseconds
-import kotlin.time.Duration.Companion.seconds
-import kotlin.time.toJavaDuration
 
 class BehandlingsdagerModuleTest {
     val sykmeldingTopic = "tsm.sykmeldinger"

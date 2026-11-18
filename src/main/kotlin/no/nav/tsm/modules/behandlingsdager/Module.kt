@@ -10,6 +10,9 @@ import no.nav.tsm.ktor.kafka.sykmeldinger.SykmeldingerConsumer
 import no.nav.tsm.ktor.logger
 import no.nav.tsm.modules.behandlingsdager.oppgave.OppgaveService
 import no.nav.tsm.modules.behandlingsdager.oppgave.OpprettOppgaveKafkaMessage
+import no.nav.tsm.modules.behandlingsdager.oppgave.tsmOppgave.TsmOppgaveClient
+import no.nav.tsm.modules.behandlingsdager.oppgave.tsmOppgave.TsmOppgaveCloudClient
+import no.nav.tsm.modules.behandlingsdager.oppgave.tsmOppgave.TsmOppgaveLocalClient
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlClient
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlCloudClient
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlLocalClient
@@ -42,6 +45,8 @@ private fun Application.configureDependencies() {
     dynamicDependencies {
         cloud { provide<PdlClient>(PdlCloudClient::class) }
         local { provide<PdlClient>(PdlLocalClient::class) }
+        cloud { provide<TsmOppgaveClient>(TsmOppgaveCloudClient::class) }
+        local { provide<TsmOppgaveClient>(TsmOppgaveLocalClient::class) }
     }
 
     dependencies {
