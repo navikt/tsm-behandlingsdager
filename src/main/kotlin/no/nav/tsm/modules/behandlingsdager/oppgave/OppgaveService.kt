@@ -4,7 +4,11 @@ import arrow.core.getOrElse
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import no.nav.tsm.core.Environment
 import no.nav.tsm.ktor.kafka.producer.KafkaRecordProducer
+import no.nav.tsm.ktor.logger
+import no.nav.tsm.modules.behandlingsdager.oppgave.tsmOppgave.OpprettOppgaveRequest
+import no.nav.tsm.modules.behandlingsdager.oppgave.tsmOppgave.TsmOppgaveClient
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlClient
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlIdentgruppe
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlPerson
@@ -14,16 +18,38 @@ import no.nav.tsm.sykmelding.input.core.model.metadata.OrgIdType
 
 class OppgaveService(
     private val pdlClient: PdlClient,
+    private val tsmOppgaveClient: TsmOppgaveClient,
     private val kafkaProducer: KafkaRecordProducer<OpprettOppgaveKafkaMessage>,
+    env: Environment,
 ) {
+    val cluster = env.runtime.name
+
     suspend fun createOppgave(sykmeldingRecord: SykmeldingRecord) {
         val person =
             pdlClient.getPerson(sykmeldingRecord.sykmelding.pasient.fnr).getOrElse {
                 throw RuntimeException("Fant ikke person for sykmelding: ${sykmeldingRecord.sykmelding.id}")
             }
         val oppgave = toOppgaveKafkaMessage(person, sykmeldingRecord)
-        kafkaProducer.send(oppgave.messageId, oppgave)
+
+        if (cluster == "dev-gcp") {
+            val sykmeldingId = sykmeldingRecord.sykmelding.id
+            val oppgaveRequest = toOppgaveRequest(sykmeldingId, person)
+            tsmOppgaveClient.createOppgave(sykmeldingId, oppgaveRequest)
+        } else {
+            kafkaProducer.send(oppgave.messageId, oppgave)
+        }
     }
+}
+
+private fun toOppgaveRequest(sykmeldingId: String, person: PdlPerson): OpprettOppgaveRequest {
+    return OpprettOppgaveRequest(
+        personident = person.identer.first { !it.historisk && it.gruppe == PdlIdentgruppe.AKTORID }.ident,
+        beskrivelse =
+            "Manuell behandling av sykmelding grunnet følgende regler: Sykmelding inneholder behandlingsdager (felt 4.4).",
+        fristFerdigstillelse = finnFristForFerdigstillingAvOppgave(LocalDate.now().plusDays(4)),
+        sykmeldingId = sykmeldingId,
+        type = "BEHANDLINGSDAGER",
+    )
 }
 
 private fun toOppgaveKafkaMessage(
