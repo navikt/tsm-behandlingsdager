@@ -14,9 +14,11 @@ class Environment(
     val behandlingsdagerIds: List<String>,
 )
 
-data class ExternalConfig(val tsmPdlCache: TsmPdlConfig)
+data class ExternalConfig(val tsmPdlCache: TsmPdlConfig, val tsmOppgave: TsmOppgave)
 
 data class TsmPdlConfig(val url: String)
+
+data class TsmOppgave(val url: String)
 
 class SykmeldingerConsumer(val pollInterval: Duration)
 
@@ -29,7 +31,11 @@ fun initializeEnvironment(config: ApplicationConfig): Environment {
             ),
         sykmeldingerConsumer =
             SykmeldingerConsumer(pollInterval = config.property("sykmeldingConsumer.longPoll").getAs()),
-        external = ExternalConfig(TsmPdlConfig(url = config.property("external.tsmPdlCache.url").getString())),
+        external =
+            ExternalConfig(
+                tsmPdlCache = TsmPdlConfig(url = config.property("external.tsmPdlCache.url").getString()),
+                tsmOppgave = TsmOppgave(url = config.property("external.tsmOppgave.url").getString()),
+            ),
         behandlingsdagerIds =
             config.property("behandlingsdager.ids").getString().split(',').filter {
                 it.isNotEmpty()

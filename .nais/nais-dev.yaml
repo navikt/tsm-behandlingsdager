@@ -48,3 +48,4 @@ spec:
         - application: logging
           namespace: nais-system
         - application: tsm-pdl-cache
+        - application: tsm-oppgave
