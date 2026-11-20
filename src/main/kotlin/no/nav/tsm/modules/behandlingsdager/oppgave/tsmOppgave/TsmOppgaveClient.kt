@@ -97,6 +97,7 @@ class TsmOppgaveCloudClient(
 
 class TsmOppgaveLocalClient() : TsmOppgaveClient {
     private val logger = logger()
+
     override suspend fun createOppgave(
         sykmeldingId: String,
         oppgaveRequest: OpprettOppgaveRequest,

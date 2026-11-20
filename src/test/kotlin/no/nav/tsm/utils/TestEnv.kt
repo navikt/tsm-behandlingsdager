@@ -6,7 +6,7 @@ import no.nav.tsm.ktor.nais.RuntimeCluster
 
 fun integrationEnvironment(): Environment {
     return Environment(
-        runtime = Runtime(env = RuntimeCluster.DEV, name = "tsm-behandlingsdager-it"),
+        runtime = Runtime(env = RuntimeCluster.LOCAL, name = "tsm-behandlingsdager-it"),
         sykmeldingerConsumer = SykmeldingerConsumer(pollInterval = 0.seconds),
         external =
             ExternalConfig(
