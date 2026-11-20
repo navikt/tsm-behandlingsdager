@@ -63,7 +63,7 @@ class TsmOppgaveCloudClient(
         val (token) = getToken()
 
         val response =
-            tsmOppgaveClient.post("$tsmOppgaveConfig/api/oppgave") {
+            tsmOppgaveClient.post("${tsmOppgaveConfig.url}/api/oppgave") {
                 header("Authorization", "Bearer $token")
                 header("X-Correlation-ID", sykmeldingId)
                 contentType(ContentType.Application.Json)
