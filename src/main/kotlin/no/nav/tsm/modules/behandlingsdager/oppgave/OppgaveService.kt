@@ -22,6 +22,7 @@ class OppgaveService(
     private val kafkaProducer: KafkaRecordProducer<OpprettOppgaveKafkaMessage>,
     env: Environment,
 ) {
+    val logger = logger()
     val cluster = env.runtime.name
 
     suspend fun createOppgave(sykmeldingRecord: SykmeldingRecord) {
@@ -32,6 +33,7 @@ class OppgaveService(
         val oppgave = toOppgaveKafkaMessage(person, sykmeldingRecord)
 
         if (cluster == "dev-gcp") {
+            logger.info("creating tsm oppgave for sykmelding ${sykmeldingRecord.sykmelding.id}")
             val sykmeldingId = sykmeldingRecord.sykmelding.id
             val oppgaveRequest = toOppgaveRequest(sykmeldingId, person)
             tsmOppgaveClient.createOppgave(sykmeldingId, oppgaveRequest)
