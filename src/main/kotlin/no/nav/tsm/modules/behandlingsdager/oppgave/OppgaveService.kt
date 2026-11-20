@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter
 import no.nav.tsm.core.Environment
 import no.nav.tsm.ktor.kafka.producer.KafkaRecordProducer
 import no.nav.tsm.ktor.logger
+import no.nav.tsm.ktor.nais.RuntimeCluster
 import no.nav.tsm.modules.behandlingsdager.oppgave.tsmOppgave.OpprettOppgaveRequest
 import no.nav.tsm.modules.behandlingsdager.oppgave.tsmOppgave.TsmOppgaveClient
 import no.nav.tsm.modules.behandlingsdager.pdl.PdlClient
@@ -23,7 +24,7 @@ class OppgaveService(
     env: Environment,
 ) {
     val logger = logger()
-    val cluster = env.runtime.name
+    val cluster = env.runtime.env
 
     suspend fun createOppgave(sykmeldingRecord: SykmeldingRecord) {
         val person =
@@ -32,7 +33,7 @@ class OppgaveService(
             }
         val oppgave = toOppgaveKafkaMessage(person, sykmeldingRecord)
 
-        if (cluster == "dev-gcp") {
+        if (cluster == RuntimeCluster.DEV) {
             logger.info("creating tsm oppgave for sykmelding ${sykmeldingRecord.sykmelding.id}")
             val sykmeldingId = sykmeldingRecord.sykmelding.id
             val oppgaveRequest = toOppgaveRequest(sykmeldingId, person)
