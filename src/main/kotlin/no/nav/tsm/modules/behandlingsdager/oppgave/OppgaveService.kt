@@ -33,15 +33,14 @@ class OppgaveService(
             }
         val oppgave = toOppgaveKafkaMessage(person, sykmeldingRecord)
 
-        /*if (cluster == RuntimeCluster.DEV) {
+        if (cluster == RuntimeCluster.DEV) {
             logger.info("creating tsm oppgave for sykmelding ${sykmeldingRecord.sykmelding.id}")
             val sykmeldingId = sykmeldingRecord.sykmelding.id
             val oppgaveRequest = toOppgaveRequest(sykmeldingId, person)
             tsmOppgaveClient.createOppgave(sykmeldingId, oppgaveRequest)
         } else {
             kafkaProducer.send(oppgave.messageId, oppgave)
-        }*/
-        kafkaProducer.send(oppgave.messageId, oppgave)
+        }
     }
 }
 
